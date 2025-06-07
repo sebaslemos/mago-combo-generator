@@ -13,6 +13,7 @@ export default function ChatView() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [fichaMarkdown, setFichaMarkdown] = useState<string>('');
   const messageListRef = useRef<HTMLDivElement>(null);
+  const [isWaiting, setIsWaiting] = useState<boolean>(false);
 
   useEffect(() => {
     if (messageListRef.current) {
@@ -21,6 +22,7 @@ export default function ChatView() {
   }, [messages]);
 
   async function handleInput(event: CustomEvent) {
+    setIsWaiting(true);
     const pergunta: string = event.detail.value;
     setMessages([
       ...messages,
@@ -41,6 +43,7 @@ export default function ChatView() {
         userColorIndex: 1,
       },
     ]);
+    setIsWaiting(false);
 
     if (tokens.length > 1) {
       setFichaMarkdown(tokens[1]);
@@ -55,7 +58,7 @@ export default function ChatView() {
         <div className="message-list-scroll-container" ref={messageListRef}>
           <MessageList items={messages} markdown />
         </div>
-        <MessageInput onSubmit={handleInput}></MessageInput>
+        <MessageInput onSubmit={handleInput} disabled={isWaiting}></MessageInput>
       </div>
       <div className="coluna-metade coluna-ficha">
         <h3 className="coluna-titulo">Ficha do Personagem</h3>
