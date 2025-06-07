@@ -14,7 +14,17 @@
   height: 100%; /* Faz a coluna ocupar a altura total do pai */
   display: flex; /* Adicionado */
   flex-direction: column; /* Adicionado */
-  overflow-y: auto;
+  border-radius: 8px; /* Adicionado para bordas arredondadas */
+  background-color: #f9f9f9; /* Adicionado um fundo padrão suave */
+}
+
+.coluna-metade:first-child {
+  background-color: #ffffff; /* Fundo branco para a coluna do chat */
+}
+
+.coluna-metade.coluna-ficha {
+  margin-left: 10px; /* Adicionado para separar as colunas */
+  background-color: #f0f0f0; /* Fundo ligeiramente diferente para a coluna da ficha */
 }
 
 .message-list-scroll-container {
@@ -22,4 +32,22 @@
   flex-grow: 1; /* Permite que este container ocupe o espaço disponível */
   overflow-y: auto; /* Habilita a rolagem para a lista de mensagens */
   min-height: 0; /* Garante o comportamento adequado da rolagem no layout flexível */
+}
+
+.markdown-scroll-container {
+  /* Novo bloco de estilo para a área de markdown */
+  flex-grow: 1; /* Permite que este container ocupe o espaço disponível */
+  overflow-y: auto; /* Habilita a rolagem para o conteúdo markdown */
+  min-height: 0; /* Garante o comportamento adequado da rolagem no layout flexível */
+  padding: 5px; /* Adiciona um pouco de padding interno */
+}
+
+.coluna-titulo {
+  /* Novo bloco de estilo para o título da coluna */
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #eee;
+  text-align: center;
 }

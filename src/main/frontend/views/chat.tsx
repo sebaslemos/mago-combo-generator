@@ -1,6 +1,6 @@
 import { Markdown, MessageInput, MessageList } from '@vaadin/react-components';
 import { GeminiChatService } from 'Frontend/generated/endpoints';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export default function ChatView() {
   type Message = {
@@ -12,6 +12,13 @@ export default function ChatView() {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [fichaMarkdown, setFichaMarkdown] = useState<string>('');
+  const messageListRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (messageListRef.current) {
+      messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   async function handleInput(event: CustomEvent) {
     const pergunta: string = event.detail.value;
@@ -45,13 +52,16 @@ export default function ChatView() {
   return (
     <div className="container-pai">
       <div className="coluna-metade">
-        <div className="message-list-scroll-container">
+        <div className="message-list-scroll-container" ref={messageListRef}>
           <MessageList items={messages} markdown />
         </div>
         <MessageInput onSubmit={handleInput}></MessageInput>
       </div>
-      <div className="coluna-metade">
-        <Markdown>{fichaMarkdown}</Markdown>
+      <div className="coluna-metade coluna-ficha">
+        <h3 className="coluna-titulo">Ficha do Personagem</h3>
+        <div className="markdown-scroll-container">
+          <Markdown>{fichaMarkdown}</Markdown>
+        </div>
       </div>
     </div>
   );
