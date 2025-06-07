@@ -1,0 +1,25 @@
+.container-pai {
+  display: flex; /* Ativa o Flexbox */
+  width: 100%; /* Garante que o container ocupe toda a largura da tela */
+  height: 95vh; /* Garante que o container ocupe toda a altura da tela */
+}
+
+.coluna-metade {
+  width: 50%; /* Define que cada coluna ocupe 50% da largura do container pai */
+  box-sizing: border-box; /* Garante que padding e border não aumentem a largura total da div */
+  /* Opcional: adicione algum estilo para visualização */
+  padding: 10px;
+  border: 1px solid #ccc;
+  flex: 1;
+  height: 100%; /* Faz a coluna ocupar a altura total do pai */
+  display: flex; /* Adicionado */
+  flex-direction: column; /* Adicionado */
+  overflow-y: auto;
+}
+
+.message-list-scroll-container {
+  /* Novo bloco de estilo */
+  flex-grow: 1; /* Permite que este container ocupe o espaço disponível */
+  overflow-y: auto; /* Habilita a rolagem para a lista de mensagens */
+  min-height: 0; /* Garante o comportamento adequado da rolagem no layout flexível */
+}
