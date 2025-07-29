@@ -86,11 +86,25 @@
 			<version>${archunit.version}</version>
 			<scope>test</scope>
 		</dependency>
-
 		<!-- AI CHAT -->
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-google-ai-gemini</artifactId>
+			<version>1.0.1-beta6</version>
+		</dependency>
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j</artifactId>
+			<version>1.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-community-redis</artifactId>
+			<version>1.0.1-beta6</version>
+		</dependency>
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-document-parser-apache-pdfbox</artifactId>
 			<version>1.0.1-beta6</version>
 		</dependency>
 	</dependencies>

@@ -1,6 +1,6 @@
 import { Markdown, MessageInput, MessageList } from '@vaadin/react-components';
-import { GeminiChatService } from 'Frontend/generated/endpoints';
-import { useState, useEffect, useRef } from 'react';
+import { MagoCombeiroChatService } from 'Frontend/generated/endpoints';
+import { useEffect, useRef, useState } from 'react';
 
 export default function ChatView() {
   type Message = {
@@ -33,8 +33,8 @@ export default function ChatView() {
       },
     ]);
 
-    const resposta = await GeminiChatService.conversar(event.detail.value);
-    const tokens = resposta.split('---');
+    const resposta = await MagoCombeiroChatService.conversar(event.detail.value);
+    const tokens = resposta.split('------------------------------dcdcdc');
     setMessages((prevMessages) => [
       ...prevMessages,
       {
