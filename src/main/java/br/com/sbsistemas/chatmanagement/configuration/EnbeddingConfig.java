@@ -43,7 +43,7 @@ public class EnbeddingConfig {
 		return EmbeddingStoreIngestor.builder()
 				.embeddingModel(embeddingModel)
 				.embeddingStore(embeddingStore)
-				.documentSplitter(DocumentSplitters.recursive(10000, 1000))
+				.documentSplitter(DocumentSplitters.recursive(15000, 1500))
 				.build();
 	}
 
