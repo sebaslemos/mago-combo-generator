@@ -51,6 +51,7 @@ public class EnbeddingConfig {
 	public EmbeddingStoreContentRetriever embeddingRetriever(
 			EmbeddingModel embeddingModel,
 			EmbeddingStore<TextSegment> embeddingStore) {
+
 		EmbeddingStoreContentRetriever retriever = EmbeddingStoreContentRetriever.builder()
 				.embeddingStore(embeddingStore)
 				.embeddingModel(embeddingModel)
