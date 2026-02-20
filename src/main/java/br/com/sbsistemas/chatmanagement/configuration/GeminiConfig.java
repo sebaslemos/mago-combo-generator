@@ -1,5 +1,11 @@
 package br.com.sbsistemas.chatmanagement.configuration;
 
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+
 import br.com.sbsistemas.chatmanagement.service.AiService;
 import dev.langchain4j.memory.chat.ChatMemoryProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
@@ -10,9 +16,6 @@ import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
 import dev.langchain4j.model.googleai.GoogleAiGeminiTokenCountEstimator;
 import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
 import dev.langchain4j.service.AiServices;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class GeminiConfig {
@@ -24,13 +27,10 @@ public class GeminiConfig {
   String modelName;
 
   @Bean
+  @Qualifier("geminiChatModel")
+  @Primary
   public ChatModel geminiChatModel() {
     return GoogleAiGeminiChatModel.builder().apiKey(apiKey).modelName(modelName).build();
-  }
-
-  @Bean
-  public EmbeddingModel googleAiEmbeddingModel() {
-    return GoogleAiEmbeddingModel.builder().apiKey(apiKey).modelName("embedding-001").build();
   }
 
   @Bean
@@ -44,15 +44,26 @@ public class GeminiConfig {
   }
 
   @Bean
+  @Qualifier("googleAiEmbeddingModel")
+  @Primary
+  public EmbeddingModel googleAiEmbeddingModel() {
+    return GoogleAiEmbeddingModel.builder()
+        .apiKey(apiKey)
+        .modelName("gemini-embedding-001")
+        .build();
+  }
+
+  @Bean
+  @Qualifier("geminiAiService")
+  @Primary
   public AiService googleAiService(
-    ChatModel model,
-    EmbeddingStoreContentRetriever contentRetriever,
-    ChatMemoryProvider chatMemoryProvider
-  ) {
+      @Qualifier("geminiChatModel") ChatModel model,
+      EmbeddingStoreContentRetriever contentRetriever,
+      ChatMemoryProvider chatMemoryProvider) {
     return AiServices.builder(AiService.class)
-      .chatModel(model)
-      .contentRetriever(contentRetriever)
-      .chatMemoryProvider(chatMemoryProvider)
-      .build();
+        .chatModel(model)
+        .contentRetriever(contentRetriever)
+        .chatMemoryProvider(chatMemoryProvider)
+        .build();
   }
 }

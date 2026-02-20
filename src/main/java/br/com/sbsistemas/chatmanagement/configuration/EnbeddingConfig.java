@@ -1,28 +1,29 @@
 package br.com.sbsistemas.chatmanagement.configuration;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 import dev.langchain4j.community.store.embedding.redis.RedisEmbeddingStore;
 import dev.langchain4j.data.document.splitter.DocumentSplitters;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
-import dev.langchain4j.model.googleai.GoogleAiGeminiTokenCountEstimator;
 import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
 import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.UnifiedJedis;
 
 @Configuration
 public class EnbeddingConfig {
 
 	@Bean
-	public EmbeddingStore<TextSegment> manualBasicoEmbeddingStore(EmbeddingModel embeddingModel) {
+	public EmbeddingStore<TextSegment> manualBasicoEmbeddingStore(EmbeddingModel embeddingModel,
+			UnifiedJedis unifiedJedis) {
 		try {
 			RedisEmbeddingStore store = RedisEmbeddingStore.builder()
-					.host("localhost")
-					.port(6379)
+					.unifiedJedis(unifiedJedis)
 					.dimension(embeddingModel.dimension())
 					.prefix("mago_combo:")
 					.indexName("mago_combo_index")
@@ -35,11 +36,15 @@ public class EnbeddingConfig {
 		}
 	}
 
+	@Bean(destroyMethod = "close")
+	public UnifiedJedis unifiedJedis() {
+		return new UnifiedJedis("redis://localhost:6379");
+	}
+
 	@Bean
 	public EmbeddingStoreIngestor embeddingStoreIngestor(
 			EmbeddingModel embeddingModel,
-			EmbeddingStore<TextSegment> embeddingStore,
-			GoogleAiGeminiTokenCountEstimator tokenCountEstimator) {
+			EmbeddingStore<TextSegment> embeddingStore) {
 		return EmbeddingStoreIngestor.builder()
 				.embeddingModel(embeddingModel)
 				.embeddingStore(embeddingStore)

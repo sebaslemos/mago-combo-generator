@@ -1,20 +1,28 @@
 package br.com.sbsistemas.chatmanagement.service;
 
-import com.vaadin.flow.server.auth.AnonymousAllowed;
-import com.vaadin.hilla.BrowserCallable;
-import dev.langchain4j.data.document.Document;
-import dev.langchain4j.data.document.loader.FileSystemDocumentLoader;
-import dev.langchain4j.data.document.parser.apache.pdfbox.ApachePdfBoxDocumentParser;
-import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
-import dev.langchain4j.store.embedding.IngestionResult;
-import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.hilla.BrowserCallable;
+
+import dev.langchain4j.data.document.Document;
+import dev.langchain4j.data.document.loader.FileSystemDocumentLoader;
+import dev.langchain4j.data.document.parser.apache.pdfbox.ApachePdfBoxDocumentParser;
+import dev.langchain4j.exception.AuthenticationException;
+import dev.langchain4j.exception.RateLimitException;
+import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
+import jakarta.annotation.PostConstruct;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
@@ -23,14 +31,24 @@ import redis.clients.jedis.JedisPool;
 @Service
 public class MagoCombeiroChatService {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(MagoCombeiroChatService.class);
+
 	@Autowired
-	private AiService aiChatService;
+	@Qualifier("geminiAiService")
+	private AiService geminiChatService;
+
+	@Autowired
+	@Qualifier("openAiService")
+	private AiService openAiChatService;
 
 	@Autowired
 	private EmbeddingStoreIngestor ingestor;
 
 	@Autowired
 	private JedisPool jedisPool;
+
+	@Value("${langchain4j.openai.api-key:${OPENAI_API_KEY:}}")
+	private String openAiApiKey;
 
 	private static final String MANUAL_PERSONAGENS_INGESTION_FLAG = "mago_combo_document_ingested_manual_personagens";
 
@@ -41,7 +59,12 @@ public class MagoCombeiroChatService {
 	}
 
 	public String conversar(String pergunta) throws IOException {
-		String result = aiChatService.chat(pergunta);
+		String result = geminiChatService.chat(pergunta);
+		return result;
+	}
+
+	public String conversarOpenAi(String pergunta) throws IOException {
+		String result = openAiChatService.chat(pergunta);
 		return result;
 	}
 
@@ -62,6 +85,11 @@ public class MagoCombeiroChatService {
 
 	@PostConstruct
 	public void initializeDocumentIngestion() {
+		if (openAiApiKey == null || openAiApiKey.isBlank()) {
+			LOGGER.warn("OpenAI API key ausente. Ingestão do documento será ignorada na inicialização.");
+			return;
+		}
+
 		// clearDocument();
 		try (Jedis jedis = jedisPool.getResource()) {
 			if (!isDocumentIngested()) {
@@ -72,16 +100,23 @@ public class MagoCombeiroChatService {
 				Path filePath = Paths.get(fileUrl.toURI());
 				Document document = FileSystemDocumentLoader.loadDocument(filePath, new ApachePdfBoxDocumentParser());
 
-				System.out.println("Documento carregado. Tamanho: " + document.text().length() + " caracteres");
-				// ...existing code...
-				IngestionResult ingest = ingestor.ingest(document);
-				System.out.println("Ingestão concluída.");
+				LOGGER.info("Documento carregado. Tamanho: {} caracteres", document.text().length());
+				ingestor.ingest(document);
+				LOGGER.info("Ingestão concluída.");
 
 				// Marca como processado
 				jedis.set(MANUAL_PERSONAGENS_INGESTION_FLAG, "true");
 			} else {
-				System.out.println("Documento já foi ingerido anteriormente.");
+				LOGGER.info("Documento já foi ingerido anteriormente.");
 			}
+		} catch (AuthenticationException e) {
+			LOGGER.warn(
+					"Falha de autenticação ao ingerir documento (verifique OPENAI_API_RPG/OPENAI_API_KEY). Inicialização continuará sem ingestão.");
+		} catch (RateLimitException e) {
+			LOGGER.warn(
+					"OpenAI sem cota disponível no momento (insufficient_quota). Inicialização continuará sem ingestão.");
+		} catch (RuntimeException e) {
+			LOGGER.warn("Falha ao ingerir documento na inicialização. A aplicação continuará sem ingestão.", e);
 		} catch (URISyntaxException e) {
 			throw new RuntimeException("Erro ao carregar o documento", e);
 		}
